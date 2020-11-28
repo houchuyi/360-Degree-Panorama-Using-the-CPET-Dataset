@@ -1,4 +1,4 @@
-# 360-Degree-Panorama-Using-the-CPET-Dataset
+# Producing 360-Degree-Panoramas Using the CPET Dataset
 
 University of Toronto - Engineering Science - Robotics
 
