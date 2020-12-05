@@ -7,7 +7,7 @@ def ransac(kp_pairs, tol, iter):
     RANSAC is essentially a sampling approach to estimating H, the homography.
     In the case of panoramas we select sets of r = 4 feature correspondences and compute the homography H.
 
-    We repeat this with n = 500 trials and select the solution that has the maximum number
+    We repeat this with iter = 500 trials and select the solution that has the maximum number
     of inliers
 
     Parameters:

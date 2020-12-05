@@ -26,37 +26,30 @@ kps = []
 dess = []
 # initialize sift detector
 sift = cv.SIFT_create()
-# for i in range(2):
-#     image = cv.imread('./data/omni_image'+str(i)+'/image.png')
-#     img.append(image)
-#
-#     # make current image to grey scale and
-#     gray = cv.cvtColor(image,cv.COLOR_BGR2GRAY)
-#
-#     # detect keypoints and compute descriptors from the keypoints
-#     kp, des = sift.detectAndCompute(gray,None)
-#
-#     # collect all the keypoints
-#     kps.append(kp)
-#     dess.append(des)
+for i in range(10):
+    image = cv.imread('./data/omni_image'+str(i)+'/processed.png')
+    img.append(image)
 
-img1 = cv.imread('./data/omni_image0/image.png',cv.IMREAD_GRAYSCALE)          # queryImage
-img2 = cv.imread('./data/omni_image1/image.png',cv.IMREAD_GRAYSCALE) # trainImage
-# Initiate SIFT detector
-sift = cv.SIFT_create()
-# find the keypoints and descriptors with SIFT
-kp1, des1 = sift.detectAndCompute(img1,None)
-kp2, des2 = sift.detectAndCompute(img2,None)
+    # make current image to grey scale and
+    gray = cv.cvtColor(image,cv.COLOR_BGR2GRAY)
+
+    # detect keypoints and compute descriptors from the keypoints
+    kp, des = sift.detectAndCompute(gray,None)
+
+    # collect all the keypoints
+    kps.append(kp)
+    dess.append(des)
+
 # BFMatcher with default params
 bf = cv.BFMatcher()
-matches = bf.knnMatch(des1,des2,k=2)
+matches = bf.knnMatch(dess[4],dess[7],k=2)
 # Apply ratio test
 good = []
 for m,n in matches:
     if m.distance < 0.75*n.distance:
         good.append([m])
 # cv.drawMatchesKnn expects list of lists as matches.
-img3 = cv.drawMatchesKnn(img1,kp1,img2,kp2,good,None,flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+img3 = cv.drawMatchesKnn(img[4],kps[4],img[7],kps[7],good,None,flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
 #plt.imshow(img3),plt.show()
 
