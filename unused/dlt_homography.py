@@ -32,6 +32,7 @@ def dlt_homography(I1pts, I2pts):
         A_i2 = [0,0,0,-xi,-yi,-1,vi*xi,vi*yi,vi]
         A.append(A_i1)
         A.append(A_i2)
+
     #convert A into numpy array for further computation of its kernal (i.e [h1 ... h9]^T)
     A = np.array(A)
     #compute null space
@@ -39,6 +40,9 @@ def dlt_homography(I1pts, I2pts):
     #normalize the null space vector so that h9 = 1
     H = H/H[8]
     #reshape the null space to 3x3 matrix H
-    H = H.reshape(3,3)
+    if H.shape == (9,1):
+        H = H.reshape(3,3)
+    else:
+        return -1,A
     #------------------
     return H, A

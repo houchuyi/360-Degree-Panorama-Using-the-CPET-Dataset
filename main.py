@@ -23,55 +23,74 @@ V. For each connected component:
 
 
 # initializations
-img = []
-kps = []
-dess = []
+stimg = {}
+img = {}
+kps = {}
+dess = {}
 
-m = 5 # number of candidate matching images
+H_dict = {}
 
 # I. initialize sift detector
 sift = cv.SIFT_create()
-for i in range(10):
+for i in [0,2,4,6,8]:
 
-    # import images
-    image = cv.imread('./data/omni_image'+str(i)+'/processed.png')
-    img.append(image)
+    # import images for stitching
+    image_for_stitching = cv.imread('./data/omni_image'+str(i)+'/processed.png')
+    stimg[str(i)] = image_for_stitching
 
-    # make current image to grey scale and
-    gray = cv.cvtColor(image,cv.COLOR_BGR2GRAY)
+    # import processed images for matching purpose
+    image_for_matching = cv.imread('./data/omni_image'+str(i)+'/ahe.png')
+    img[str(i)]= image_for_matching
+
+    # # make current image to grey scale and
+    # gray = cv.cvtColor(image,cv.COLOR_BGR2GRAY)
 
     # detect keypoints and compute descriptors from the keypoints
-    kp, des = sift.detectAndCompute(gray,None)
+    kp, des = sift.detectAndCompute(image_for_matching,None)
 
     # collect all the keypoints and descriptors
-    kps.append(kp)
-    dess.append(des)
+    kps[str(i)]= kp
+    dess[str(i)]= des
 
 # III. For each image
 # initialize the brute force matcher
 bf = cv.BFMatcher()
-for cur_index in range(len(img)):
-
+for cur_index in [0,2,4,6,8]:
     # (i) we know the 5 candidate matching images because they are taken by the 5 neighbour cameras
-    cand_images = []
+    # cand_images = []
 
     # obtain the image index, i.e. the camera index for the 5 neighbour images relative to the current image index
     index = obtain_index(cur_index)
+    index = np.where(index<0, index+10, index)
     for neighb_index in index:
-        cand_images.append(img[neighb_index])
 
-        # (ii)
-        # II. Use brute force matching, BFMatcher with default params
-        good = obtain_good_matches(bf,cur_index,neighb_index,dess)
+        if str(neighb_index) not in img:
+            continue
 
-        # for each pair of images (cur_image, neighb_image), using RANSAC to filter inliers of the good matches and to solve for the homography
-        
-    # print(cur_index,neighb_index)
-    # print(len(good))
-    # print(good)
-    # if cur_index == 4 and neighb_index == -3:
-    #     img3 = cv.drawMatchesKnn(img[4],kps[4],img[-3],kps[-3],good,None,flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-    #     cv.imwrite('tests.jpg',img3)
+        else:
+            # cand_images.append(img[str(neighb_index)])
 
+            # II. Use brute force matching, BFMatcher with default params
+            good = obtain_good_matches(bf,dess[str(cur_index)],dess[str(neighb_index)])
 
-# if __name__=="__main__":
+            # (ii)
+            # for each pair of images (cur_image, neighb_image), using RANSAC to filter inliers of the good matches and to solve for the homography
+            print(cur_index,neighb_index)
+
+            if (len(good) >= 4):
+                dst = np.float32([ kps[str(cur_index)][m[0].queryIdx].pt for m in good ]).reshape(-1,1,2)
+                src = np.float32([ kps[str(neighb_index)][m[0].trainIdx].pt for m in good ]).reshape(-1,1,2)
+
+            H, masked = cv.findHomography(src, dst, cv.RANSAC, 5.0)
+            H_dict[str(neighb_index)+str(cur_index)] = H
+
+# obtain homography that warps img (1-9) into coordinates of img 1
+Hs = obtain_Hs(H_dict)
+
+# warp image
+for i in range(9):
+    if str(i+1) not in stimg:
+        continue
+    else:
+        wrap  = warpTwoImages(stimg['0'],stimg[str(i+1)], Hs[i//2])
+        cv.imwrite('firststitch'+str(0)+'-'+str(i+1)+'.jpg',wrap)

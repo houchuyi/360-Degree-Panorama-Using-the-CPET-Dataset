@@ -15,6 +15,11 @@ def get_Gamma_Value(gray_img):
     return gamma_val
 
 for i in range(10):
+
+    # if i == 2:
+    #     image = cv.imread('./data/omni_image'+str(i)+'/image.png')
+    # else:
+    # image = cv.imread('./data/omni_image'+str(i)+'/calibresult.png')
     image = cv.imread('./data/omni_image'+str(i)+'/image.png')
     gray_img = cv.cvtColor(image,cv.COLOR_BGR2GRAY)
     value_of_gamma= get_Gamma_Value(gray_img)#gamma取值
